@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.6.6;
 
-import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+import "@chainlink/contracts/src/v0.6/interfaces/AggregatorV3Interface.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@chainlink/contracts/src/v0.8/VRFConsumerBase.sol";
+import "@chainlink/contracts/src/v0.6/VRFConsumerBase.sol";
 
-contract Lottery is Ownable {
+contract Lottery is Ownable, VRFConsumerBase {
     address payable[] public players;
     uint256 public usdEntryFee = 50 * (10**18);
     address payable public recentWinner;
@@ -74,5 +74,9 @@ contract Lottery is Ownable {
         require(_randomness > 0, "random number not generated");
         uint256 indexOfWinner = _randomness % players.length;
         recentWinner = players[indexOfWinner];
+        recentWinner.transfer(address(this).balance);
+        //Reset the lottery
+        players = new address payable[](0);
+        lottery_state = LOTTERY_STATE.CLOSED;
     }
 }
